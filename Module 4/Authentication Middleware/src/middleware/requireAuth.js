@@ -1,4 +1,4 @@
-// src/middleware/requireAuth.js
+// src/middleware/requireAuth.js supppp
 const jwt = require('jsonwebtoken');
 
 module.exports = function requireAuth(req, res, next) {
