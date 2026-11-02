@@ -1,6 +1,7 @@
 'use strict';
 // middleware/requireAuth.js — verifies the Bearer token and sets req.user
 // Given — do not modify. This is the middleware from LU51.
+// It is used in the /api routes to protect them from unauthenticated access.
 
 const { verifyToken } = require('../utils/jwt');
 
