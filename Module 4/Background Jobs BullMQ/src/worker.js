@@ -10,4 +10,42 @@
 //  4. Throwing inside the worker function → job fails → BullMQ retries.
 //     Returning without throwing → job completed.
 
-// TODO: implement
+const { Worker } = require('bullmq');
+const { connection } = require('./queue');
+const { transporter } = require('./email');
+
+const worker = new Worker(
+  'email',
+  async (job) => {
+    if (job.name === 'otp') {
+      const { to, otp } = job.data;
+      await transporter.sendMail({
+        from: process.env.SMTP_USER || 'noreply@example.com',
+        to,
+        subject: 'Your Verification OTP',
+        text: `Your OTP is: ${otp}`,
+        html: `<p>Your OTP is: <strong>${otp}</strong></p>`,
+      });
+    }
+  },
+  {
+    connection,
+    defaultJobOptions: {
+      attempts: 3,
+      backoff: {
+        type: 'exponential',
+        delay: 1000,
+      },
+    },
+  }
+);
+
+worker.on('completed', (job) => {
+  console.log(`Job ${job.id} completed successfully`);
+});
+
+worker.on('failed', (job, err) => {
+  console.error(`Job ${job?.id} failed with error: ${err?.message || err}`);
+});
+
+module.exports = { worker };
